@@ -99,3 +99,13 @@ Sample configuration created successfully at C:\Users\%USERNAME%\.yc\YcIAMSample
 This creates a new config value with placeholder values for you to edit in the directory ```C:\Users\%USERNAME%\.yc\```
 
 
+
+
+# Welcome Letter
+https://www.nuget.org/packages/DocumentFormat.OpenXml/
+https://www.nuget.org/api/v2/package/DocumentFormat.OpenXml/3.1.0
+documentformat.openxml.3.1.0.nupkg rename to ZIP
+\documentformat.openxml.3.1.0\lib\net46
+Grab .DLL
+Framework.dll
+https://www.nuget.org/packages/DocumentFormat.OpenXml.Framework
