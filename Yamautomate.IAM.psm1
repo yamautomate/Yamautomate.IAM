@@ -1,4 +1,4 @@
-Function New-YcAdUser {
+Function New-YcIAMAdUser {
     param (
         [Parameter(Mandatory=$true)] [string]$firstname,
         [Parameter(Mandatory=$true)] [string]$lastname,
@@ -12,7 +12,11 @@ Function New-YcAdUser {
         [Parameter(Mandatory=$false)][string]$EventLogSource,
         [Parameter(Mandatory=$false)][bool]$LogEnabled = $true
     )
+
     #Check for required modules 
+    #Requires -Modules @{ModuleName='Yamautomate.Core';ModuleVersion='1.0.6.4'}
+    #Requires -Modules @{ModuleName='ActiveDirectory';ModuleVersion='1.0.1.0'}
+
     try {
         $requiredModules = @("ActiveDirectory")
         Get-YcRequiredModules -moduleNames $requiredModules -ErrorAction Stop
@@ -199,21 +203,28 @@ Function New-YcAdUser {
         }
     }
 
+    Write-YcLogMessage ("---------------------------------------------------------------") -source $EventLogSource -ToEventLog $LogToEventLog -ToLogFile $LogToLogFile -ToOutput $LogToOutput -WriteHost $LogToHost -logDirectory $PathToLogFile
+
     return $InitialPw
 }
-Function New-YcTeamsPhoneNumberAssignment {
+Function New-YcIAMTeamsPhoneNumberAssignment {
     param (
         [Parameter(Mandatory=$true)] [string]$phoneNumber,
         [Parameter(Mandatory=$true)] [string]$firstname,
         [Parameter(Mandatory=$true)] [string]$lastname,
-        [Parameter(Mandatory=$false)][string]$PathToConfig = "$env:USERPROFILE\.yc\NewAdUser-Config.json",
+        [Parameter(Mandatory=$true)] [string]$location,
+        [Parameter(Mandatory=$false)][string]$PathToConfig = "$env:USERPROFILE\.yc\YcIAMSampleConfig.json",
         [Parameter(Mandatory=$false)][string]$EventLogSource,
         [Parameter(Mandatory=$false)][bool]$LogEnabled = $true
     )
 
+
     #Check for required modules 
+    #Requires -Modules @{ModuleName='Yamautomate.Core';ModuleVersion='1.0.6.4'}
+    #Requires -Modules @{ModuleName='MicrosoftTeams';ModuleVersion='6.5.0'}
+
     try {
-        $requiredModules = @("MicIAMrosoftTeams")
+        $requiredModules = @("MicrosoftTeams", "Yamautomate.Core")
         Get-YcRequiredModules -moduleNames $requiredModules -ErrorAction Stop
     }
     catch {
@@ -226,7 +237,7 @@ Function New-YcTeamsPhoneNumberAssignment {
         $locationForLookup = "Location-"+$location
         $TopLevelDomain = $config.$locationForLookup.TopLevelDomain
         $CertificateThumbprint = $config.TeamsPhone.CertificateThumbprint
-        $tenantId = $config.TeamsPhone.tenantId
+        $tenantId = $config.AzureGeneral.tenantId
         $appId = $config.TeamsPhone.AzureAppRegistrationClientId
         $rawDomainName = $config.ActiveDirectory.rawDomainName
         $policyname = $config.TeamsPhone.PolicyName 
@@ -252,6 +263,15 @@ Function New-YcTeamsPhoneNumberAssignment {
             $strLogToLogFile = $config.EventLogging.LogToLogFile
             $strLogToOutput = $config.EventLogging.LogToOutput
             $strLogToHost = $config.EventLogging.LogToHost
+            $strPathToLogFile = $config.EventLogging.PathToLogFile
+
+            if ($strPathToLogFile)
+            {
+               $PathToLogFile = $strPathToLogFile
+            }
+            else {
+               $PathToLogFile = "$env:USERPROFILE\.yc"
+            }
     
             If ($strLogToEventLog -eq "true")
             {
@@ -286,31 +306,142 @@ Function New-YcTeamsPhoneNumberAssignment {
 
     try {
         Connect-MicrosoftTeams -TenantId $tenantId -Certificate $CertificateThumbprint -ApplicationId $appId
-        Write-YcLogMessage ("Successfully connected to Teams Online using Certificate.") -source $EventLogSource -ToEventLog $LogToEventLog -ToLogFile $LogToLogFile -ToOutput $LogToOutput -WriteHost $LogToHost
+        Write-YcLogMessage ("Successfully connected to Teams Online using Certificate.") -source $EventLogSource -ToEventLog $LogToEventLog -ToLogFile $LogToLogFile -ToOutput $LogToOutput -WriteHost $LogToHost -logDirectory $PathToLogFile
     }
     catch {
-        Write-YcLogMessage ("Could not connect to Teams. Aborting. Error Details: "+$_.Exception.Message) Error -source $EventLogSource -ToEventLog $LogToEventLog -ToLogFile $LogToLogFile -ToOutput $LogToOutput -WriteHost $false
+        Write-YcLogMessage ("Could not connect to Teams. Aborting. Error Details: "+$_.Exception.Message) Error -source $EventLogSource -ToEventLog $LogToEventLog -ToLogFile $LogToLogFile -ToOutput $LogToOutput -WriteHost $false -logDirectory $PathToLogFile
         throw ("Could not connect to Teams. Aborting. Error Details: "+$_.Exception.Message)
     }
 
     try {
-        Write-YcLogMessage ("Trying to assign policy: "+$policyname+" to user: "+$identity) -source $EventLogSource -ToEventLog $LogToEventLog -ToLogFile $LogToLogFile -ToOutput $LogToOutput -WriteHost $LogToHost
+        Write-YcLogMessage ("Trying to assign policy: "+$policyname+" to user: "+$identity) -source $EventLogSource -ToEventLog $LogToEventLog -ToLogFile $LogToLogFile -ToOutput $LogToOutput -WriteHost $LogToHost -logDirectory $PathToLogFile
 
         Set-CsPhoneNumberAssignment -Identity $identity -PhoneNumber $phoneNumber -PhoneNumberType DirectRouting
         Grant-CsOnlineVoiceRoutingPolicy -Identity $identity -PolicyName $policyname 
         Grant-CsTeamsUpgradePolicy -Identity $identity -PolicyName UpgradeToTeams
 
-        Write-YcLogMessage ("Successfully assigned policy: "+$policyname+" to user: "+$identity) -source $EventLogSource -ToEventLog $LogToEventLog -ToLogFile $LogToLogFile -ToOutput $LogToOutput -WriteHost $LogToHost
+        Write-YcLogMessage ("Successfully assigned policy: "+$policyname+" to user: "+$identity) -source $EventLogSource -ToEventLog $LogToEventLog -ToLogFile $LogToLogFile -ToOutput $LogToOutput -WriteHost $LogToHost -logDirectory $PathToLogFile
     }
     catch {
-        Write-YcLogMessage ("Could not connect to assign phoneNumber. Aborting. Error Details: "+$_.Exception.Message) Error -source $EventLogSource -ToEventLog $LogToEventLog -ToLogFile $LogToLogFile -ToOutput $LogToOutput -WriteHost $false
-        throw ("Could not connect to assign phoneNumber. Aborting. Error Details: "+$_.Exception.Message)
+        Write-YcLogMessage ("Could not connect to assign phoneNumber. Aborting. Error Details: "+$_.Exception.Message) Error -source $EventLogSource -ToEventLog $LogToEventLog -ToLogFile $LogToLogFile -ToOutput $LogToOutput -WriteHost $false -logDirectory $PathToLogFile
+        throw ("Could not assign phoneNumber. Aborting. Error Details: "+$_.Exception.Message)
     }
     finally {
         Disconnect-MicrosoftTeams 
     }
-}
 
+    Write-YcLogMessage ("---------------------------------------------------------------") -source $EventLogSource -ToEventLog $LogToEventLog -ToLogFile $LogToLogFile -ToOutput $LogToOutput -WriteHost $LogToHost -logDirectory $PathToLogFile
+
+}
+function New-YcIAMWelcomeLetterFromTemplate {
+    param (
+        [Parameter(Mandatory=$true)] [string]$templatePath,        
+        [Parameter(Mandatory=$true)] [string]$FirstName,           
+        [Parameter(Mandatory=$true)] [string]$LastName,           
+        [Parameter(Mandatory=$true)] [string]$InitialPassword,      
+        [Parameter(Mandatory=$true)] [string]$location,
+        [Parameter(Mandatory=$false)][string]$PathToConfig = "$env:USERPROFILE\.yc\YcIAMSampleConfig.json",
+        [Parameter(Mandatory=$false)] [hashtable]$CustomPlaceholders = @{}  # Custom placeholders from config or parameters
+    )
+
+    #Import config and map values to variables
+    try {
+        $config = Get-Content -raw -Path $PathToConfig | ConvertFrom-Json -ErrorAction Stop
+        $locationForLookup = "Location-"+$location
+        $TopLevelDomain = $config.$locationForLookup.TopLevelDomain
+        $rawDomainName = $config.ActiveDirectory.rawDomainName
+        $identity = ($firstname.ToLower())+"."+($lastname.ToLower())+"@"+$rawDomainName+$TopLevelDomain 
+
+        Write-YcLogMessage "Successfully read config." -WriteHost $true
+    }
+
+    catch {
+        throw ("Could not grab contents of ConfigFile. Aborting. Error Details: "+$_.Exception.Message)
+    }
+
+    # Check if the file exists
+    if (-not (Test-Path -Path $templatePath)) {
+        throw ("Template does not exist at specified path.")
+    }
+
+    <# $openXmlDll = "C:\Temp\Word\DocumentFormat.OpenXml.dll"
+    $openXmlFramework = "C:\Temp\Word\DocumentFormat.OpenXml.Framework.dll"
+    Add-Type -Path $openXmlDll
+    Add-Type -Path $openXmlFramework
+    #>
+    try {
+        # Build the path to the DLL relative to the module base directory
+        $openXmlDll = Join-Path -Path $PSScriptRoot -ChildPath "lib\DocumentFormat.OpenXml.dll"
+        $openXmlFramework = Join-Path -Path $PSScriptRoot -ChildPath "lib\DocumentFormat.OpenXml.Framework.dll"
+
+        # Load the DLLs if not already loaded
+        if (-not ([System.AppDomain]::CurrentDomain.GetAssemblies() | Where-Object { $_.Location -eq $openXmlDll })) {
+            Add-Type -Path $openXmlDll
+        }
+        if (-not ([System.AppDomain]::CurrentDomain.GetAssemblies() | Where-Object { $_.Location -eq $openXmlFramework })) {
+            Add-Type -Path $openXmlFramework
+        }
+
+        Write-YcLogMessage ("Successfully loaded required DLLs from path: "+$PSScriptRoot+"\lib\") -WriteHost $true
+    }
+    catch {throw ("Could not load required .DLLs. Aborting. Error Details: "+$_.Exception.Message)}
+
+    #Create working copy
+    $templateBasePath = Split-Path $templatePath
+    $workingcopyPath = $templateBasePath+"\WL_"+$FirstName+"_"+$LastName+".docx"
+    Copy-Item -Path $templatePath -Destination $workingcopyPath
+    $templatePath = $workingcopyPath
+
+    Write-YcLogMessage ("Path to copied item from template: "+$workingcopyPath) -WriteHost $true
+
+    # Create the search and replace text
+    # Default placeholders
+    $defaultPlaceholders = @{
+        'EMAIL'     = $identity
+        'INITPASS'  = $InitialPassword
+        'FIRSTNAME' = $FirstName
+        'LASTNAME'  = $LastName
+    }
+
+    # Merge custom placeholders (from config or parameters) with default placeholders
+    $placeholders = $defaultPlaceholders + $CustomPlaceholders
+
+    try {
+        # Open the Word document for editing
+        Write-YcLogMessage ("Trying to open .docx file using OpenXML .DLL...") -WriteHost $true
+        [Reflection.Assembly]::LoadFrom($openXmlDll) | Out-Null
+        $doc = [DocumentFormat.OpenXml.Packaging.WordprocessingDocument]::Open($templatePath, $true)
+
+        Write-YcLogMessage ("Opened file. Trying to read text..") -WriteHost $true
+
+        # Get the main document part
+        $mainPart = $doc.MainDocumentPart
+        $docText = ''
+
+        # Read the document text
+        $reader = [System.IO.StreamReader]::new($mainPart.GetStream())
+        try {$docText = $reader.ReadToEnd()} 
+        finally {$reader.Dispose()}    
+        Write-YcLogMessage ("Successfully read text from .docx") -WriteHost $true
+        }
+    catch {throw ("Could not read file content using System.IO.StreamReader. Aborting. Error Details: "+$_.Exception.Message)}
+
+    try {
+        # Iterate over each placeholder and replace it with the appropriate value
+        foreach ($placeholder in $placeholders.GetEnumerator()) 
+            {
+                Write-YcLogMessage ("Processing placeholder: "+$placeholder) -WriteHost $true
+                $docText = $docText -replace $placeholder.Key, $placeholder.Value
+            }   
+        # Write the updated text back to the document
+        Write-YcLogMessage ("Writing upda text back to working copy...") -WriteHost $true
+        $writer = [System.IO.StreamWriter]::new($mainPart.GetStream([System.IO.FileMode]::Create))
+        try {$writer.Write($docText)} 
+        finally {$writer.Dispose()}
+    }
+    catch {throw ("Could not replace placeholder text using System.IO.StreamWriter. Aborting. Error Details: "+$_.Exception.Message)}
+    finally {$doc.Dispose()}
+}
 function New-YcIAMSampleConfig {
     <#
     .SYNOPSIS
