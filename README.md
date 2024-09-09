@@ -8,12 +8,12 @@ Based on: [```Yamautomate.Core```](https://github.com/yamautomate/Yamautomate.Co
 
 ## Prereqs
 
-### For ```New-YcAdUser```
+### For ```New-YcIAMAdUser```
 - PowerShell Module ```Yamautomate.Core``` installed
 - PowerShell Module ```ActiveDirectory``` is installed
 - Network line of sight to a Domain Controller
 - Account Operator role in AD or higher
-### For ```New-YcTeamsPhoneNumberAssignment```
+### For ```New-YcIAMTeamsPhoneNumberAssignment```
 - PowerShell Module ```MicrosoftTeams``` installed
 - Certificate that permits Access to an Azure App Registration is installed (for non interactive authentication)
   - AppRegistration needs role ```Teams Administrator```
@@ -85,31 +85,30 @@ The required Version depends your OS and targeted .NET Framework. Prebundled com
 
 ## Create a new User
 ```powershell
-Import-Module "Yamautomate.IAM"
-New-YcAdUser -firstname "Hampisa" -lastname "Tester71" -location "CH" -department "Technologies" -team "QE" -phoneNumber "+41791901245" -jobTitle "Tester" -manager "yanik.maurer" -PathToConfig "C:\temp\YcIAMSampleConfig.json" -LogEnabled $true
+New-YcIAMAdUser -firstname "Hans" -lastname "Test" -location "CH" -department "HR" -team "APAC" -phoneNumber "+41XXXXXX" -jobTitle "HR Manager" -manager "john.doe" -PathToConfig "C:\temp\YcIAMSampleConfig.json" -LogEnabled $true
 ```
 
 ## Assign a Teams Phone number to a User
 ```powershell
-Import-Module "Yamautomate.IAM"
-New-YcTeamsPhoneNumberAssignment -firstname "Hampisa" -lastname "Tester71" -location "CH" -department "Technologies" -team "QE" -phoneNumber "+41791901245" -jobTitle "Tester" -manager "yanik.maurer" -PathToConfig "YcIAMSampleConfig.json" -LogEnabled $true
+New-YcIAMTeamsPhoneNumberAssignment -firstname "Hans" -lastname "Test" -location "CH" -phoneNumber "+41XXXXXX" -PathToConfig "YcIAMSampleConfig.json" -LogEnabled $true
 ```
 
 ## Generate a new sample config
 ```powershell
 New-YcIAMSampleConfig
-Sample configuration created successfully at C:\Users\%USERNAME%\.yc\YcIAMSampleConfig.json
 ```
 This creates a new config value with placeholder values for you to edit in the directory ```C:\Users\%USERNAME%\.yc\```
 
+## Generate a Welcome letter based on a template
+This example assumes you have a ```Template.docx``` at ```C:\Temp\```. This document has the following keywords that need to be replaced:
+- EMAIL (handled by default behaviour)
+- INITPASS (handled by default behaviour)
+- FIRSTNAME (handled by default behaviour)
+- LASTNAME (handled by default behaviour)
+- LOBAPP1USR (can be appended using ```-CustomPlaceholders``` parameter)
+- LOBAPP1PWD (can be appended using ```-CustomPlaceholders``` parameter)
 
-
-
-# Welcome Letter
-
-https://www.nuget.org/api/v2/package/DocumentFormat.OpenXml/3.1.0
-documentformat.openxml.3.1.0.nupkg rename to ZIP
-\documentformat.openxml.3.1.0\lib\net46
-Grab .DLL
-Framework.dll
-
+Lets create a Welcome letter for Hans Test, joining in Switzerland:
+```powershell
+New-YcIAMWelcomeLetterFromTemplate -templatePath C:\Temp\Template.docx -FirstName "Yanik" -LastName "Maurer" -InitialPassword "GTZZKJ" -location "CH" -PathToConfig "C:\temp\YcIAM-Config.json" -CustomPlaceholders @{ 'LOBAPP1USR' = 'YMAURER'; 'LOBAPP1PWD' = 'JaneDoe1873!' }
+```
