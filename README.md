@@ -3,8 +3,8 @@ Creates an AD User and assigns Teams Phone number.
 Based on: [```Yamautomate.Core```](https://github.com/yamautomate/Yamautomate.Core)
 
 ## Limitations and assumptions
-- Single forrest Domains only
-- Assumes Hybrid Identities
+- Assumes username notation of "firstname.lastname"
+- No logic if two users with same name exist
 
 ## Prereqs
 
