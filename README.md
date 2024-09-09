@@ -1,6 +1,10 @@
-# New-SpeAdUser
+# Yamautomate.IAM
 Creates an AD User and assigns Teams Phone number. Used in Onboardings.
 Based on: [```Yamautomate.Core```](https://github.com/yamautomate/Yamautomate.Core) and [```Yamautomate.IAM```](https://github.com/yamautomate/Yamautomate.IAM)
+
+## Limitations and assumptions
+- Single forrest Domains only
+- Assumes Hybrid Identities
 
 ## Prereqs
 - Required Modules:
@@ -41,10 +45,6 @@ Based on: [```Yamautomate.Core```](https://github.com/yamautomate/Yamautomate.Co
     - ```Phone```
     - ```TopLevelDomain```
  
-## Limitations and assumptions
-- Single forrest Domains only
-- Assumes Hybrid Identities
-
 ## Generating a new sample config
 ```powershell
 New-YcIAMSampleConfig
@@ -53,6 +53,12 @@ Sample configuration created successfully at C:\Users\%USERNAME%\.yc\YcIAMSample
 This creates a new config value with placeholder values for you to edit in the directory ```C:\Users\%USERNAME%\.yc\```
 
 ## Creating a new User
+```powershell
+Import-Module "Yamautomate.IAM"
+New-YcAdUser -firstname "Hampisa" -lastname "Tester71" -location "CH" -department "Technologies" -team "QE" -phoneNumber "+41791901245" -jobTitle "Tester" -manager "yanik.maurer" -PathToConfig "C:\temp\IdGov-NewAdUser-Config.json" -LogEnabled $true
+```
+
+## Assigning a Teams Phone number to a User
 ```powershell
 Import-Module "Yamautomate.IAM"
 New-YcAdUser -firstname "Hampisa" -lastname "Tester71" -location "CH" -department "Technologies" -team "QE" -phoneNumber "+41791901245" -jobTitle "Tester" -manager "yanik.maurer" -PathToConfig "C:\temp\IdGov-NewAdUser-Config.json" -LogEnabled $true
