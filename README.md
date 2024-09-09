@@ -17,8 +17,12 @@ Based on: [```Yamautomate.Core```](https://github.com/yamautomate/Yamautomate.Co
 - PowerShell Module ```MicrosoftTeams``` installed
 - Certificate that permits Access to an Azure App Registration is installed (for non interactive authentication)
   - AppRegistration needs role ```Teams Administrator```
-  - AppRegistration needs permissions ```Organization.Read.All``` 
+  - AppRegistration needs permissions ```Organization.Read.All```
+### For ```New-YcIAMWelcomeLetterFromTemplate```
+-  [```DocumentFormat.OpenXml```](https://www.nuget.org/packages/DocumentFormat.OpenXml/) .DLL in  ```lib\``` folder of installation path
+-  [```DocumentFormat.OpenXml.Framework```](https://www.nuget.org/packages/DocumentFormat.OpenXml.Framework) .DLL in  ```lib\``` folder of installation path
 
+The required Version depends your OS and targeted .NET Framework. Prebundled comes ```v3.1.0``` 
 ## How it works
 ```Yamautomate.IAM``` uses a configuration file to define the beheaviour of how the AD User will be created. When the function is executed, it retrieves the settings from the config file and creates the AD User accordingly.
 
@@ -102,10 +106,10 @@ This creates a new config value with placeholder values for you to edit in the d
 
 
 # Welcome Letter
-https://www.nuget.org/packages/DocumentFormat.OpenXml/
+
 https://www.nuget.org/api/v2/package/DocumentFormat.OpenXml/3.1.0
 documentformat.openxml.3.1.0.nupkg rename to ZIP
 \documentformat.openxml.3.1.0\lib\net46
 Grab .DLL
 Framework.dll
-https://www.nuget.org/packages/DocumentFormat.OpenXml.Framework
+
