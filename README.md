@@ -50,10 +50,47 @@ Based on: [```Yamautomate.Core```](https://github.com/yamautomate/Yamautomate.Co
    -  ```AzureAppRegistrationClientId``` defines the clientId to an Application Registration that has needed permissions as per requierments table above
    -  ```CertificateThumprint``` defines the thumbprint of the certificate used to connect to an Application Registration
    -  ```PolicyName``` defines the name of the voice policy that shall be assigned
-    
+
+
+
 
 
 # How-To
+## Initial Setup
+### For ```New-YcAdUser```
+1. Connect to ```YOUR-SERVER``` via ```mstsc.exe```
+2. Launch a PowerShell as Administrator (only needed for initial run to setup LogSources)
+3. If the Core Module is not installed, install it via ```Install-Module Yamautomate.Core```
+4. If the IAM Module is not installed, install it via ```Install-Module Yamautomate.IAM```
+5. Import the module ```Yamautomate.IAM``` running ```Import-Module Yamautomate.IAM```
+6. Grab the config or created a sample config in ```C:\Temp\```
+7. Adjust the config values if needed
+
+
+### For ```New-YcTeamsPhoneNumberAssignment```
+1. Create an Azure Application Registration in Azure
+    - Provide the role ```Teams.Administrator``` to the created Application Registration
+    - Provide the API Permission ```Organization.Read.All``` to the created Application Registration
+    - Note down the ```ClientID``` of the created Application Registration 
+5. On ```YOUR-SERVER``` launch a PowerShell session as Administrator
+   - Import the module ```Yamautomate.IAM``` running ```Import-Module Yamautomate.IAM```
+   - Create a new self-signed certificate using ```New-YcSelfSignedCertForAppReg -subject "TeamsAdministration" -validForYears 2```
+   - Install the certificate by double-clicking it
+8. Back in the Azure Portal, upload the created certificate to the created App Registration in step 1.
+9. Back on ```YOUR-SERVER``` In the config, adjust ```CertificateThumprint``` and ```AzureAppRegistrationClientId``` to match the created Certificate and AppId
+
+## Create a new User
+```powershell
+Import-Module "Yamautomate.IAM"
+New-YcAdUser -firstname "Hampisa" -lastname "Tester71" -location "CH" -department "Technologies" -team "QE" -phoneNumber "+41791901245" -jobTitle "Tester" -manager "yanik.maurer" -PathToConfig "C:\temp\YcIAMSampleConfig.json" -LogEnabled $true
+```
+
+## Assign a Teams Phone number to a User
+```powershell
+Import-Module "Yamautomate.IAM"
+New-YcTeamsPhoneNumberAssignment -firstname "Hampisa" -lastname "Tester71" -location "CH" -department "Technologies" -team "QE" -phoneNumber "+41791901245" -jobTitle "Tester" -manager "yanik.maurer" -PathToConfig "YcIAMSampleConfig.json" -LogEnabled $true
+```
+
 ## Generate a new sample config
 ```powershell
 New-YcIAMSampleConfig
@@ -61,14 +98,4 @@ Sample configuration created successfully at C:\Users\%USERNAME%\.yc\YcIAMSample
 ```
 This creates a new config value with placeholder values for you to edit in the directory ```C:\Users\%USERNAME%\.yc\```
 
-## Create a new User
-```powershell
-Import-Module "Yamautomate.IAM"
-New-YcAdUser -firstname "Hampisa" -lastname "Tester71" -location "CH" -department "Technologies" -team "QE" -phoneNumber "+41791901245" -jobTitle "Tester" -manager "yanik.maurer" -PathToConfig "C:\temp\IdGov-NewAdUser-Config.json" -LogEnabled $true
-```
 
-## Assign a Teams Phone number to a User
-```powershell
-Import-Module "Yamautomate.IAM"
-New-YcTeamsPhoneNumberAssignment -firstname "Hampisa" -lastname "Tester71" -location "CH" -department "Technologies" -team "QE" -phoneNumber "+41791901245" -jobTitle "Tester" -manager "yanik.maurer" -PathToConfig "C:\temp\IdGov-NewAdUser-Config.json" -LogEnabled $true
-```
