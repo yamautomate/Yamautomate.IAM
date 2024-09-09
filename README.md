@@ -1,6 +1,6 @@
 # Yamautomate.IAM
 Creates an AD User and assigns Teams Phone number.
-Based on: [```Yamautomate.Core```](https://github.com/yamautomate/Yamautomate.Core) and [```Yamautomate.IAM```](https://github.com/yamautomate/Yamautomate.IAM)
+Based on: [```Yamautomate.Core```](https://github.com/yamautomate/Yamautomate.Core)
 
 ## Limitations and assumptions
 - Single forrest Domains only
