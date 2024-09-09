@@ -1,0 +1,56 @@
+{
+  "TeamsPhone": {
+    "CertificateThumbprint": "",
+    "PolicyName": "",
+    "AzureAppRegistrationClientId": ""
+  },
+  "Location-CH": {
+    "TopLevelDomain": "",
+    "Country": "",
+    "City": "",
+    "ZIPCode": "",
+    "Street": "",
+    "Phone": ""
+  },
+  "AzureGeneral": {
+    "tenantId": ""
+  },
+  "EventLogging": {
+    "NameOfEventSource": "",
+    "LogToHost": "",
+    "LogToEventlog": "",
+    "LogToLogFile": "",
+    "LogToOutput": "",
+    "PathToLogFile": ""
+  },
+  "ActiveDirectory": {
+    "SecondarySMTPAlias": "",
+    "rawDomainName": "",
+    "SwapWith": "",
+    "SetOfficeIpPhone": "",
+    "MakeSecondary": "",
+    "OU": ""
+  },
+  "Notifications": {
+    "AzureAppRegistrationClientSecretCredentialName": "",
+    "SendReportEmailTo": "",
+    "AzureAppRegistrationClientId": "",
+    "SendReportEmailFrom": ""
+  },
+  "Location-DE": {
+    "TopLevelDomain": "",
+    "Country": "",
+    "City": "",
+    "ZIPCode": "",
+    "Street": "",
+    "Phone": ""
+  },
+  "Location-US": {
+    "TopLevelDomain": "",
+    "Country": "",
+    "City": "",
+    "ZIPCode": "",
+    "Street": "",
+    "Phone": ""
+  }
+}
