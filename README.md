@@ -9,10 +9,8 @@ Based on: [```Yamautomate.Core```](https://github.com/yamautomate/Yamautomate.Co
 ## Prereqs
 - Required Modules:
   - ```Yamautomate.Core``` installed
-  - ```Yamautomate.IAM``` installed
   - ```MicrosoftTeams``` installed
   - ```ActiveDirectory``` is installed
-- Config.json (Filled out with needed parameters)
 - Network line of sight to a Domain Controller
 - Account Operator role in AD or higher
 - Certificate that permits Access to an Azure App Registration is installed
@@ -32,6 +30,7 @@ Based on: [```Yamautomate.Core```](https://github.com/yamautomate/Yamautomate.Co
   - ```SetOfficeIpPhone``` defines if the location-specific ```Phone``` shall be written to the ```IpPhone``` property
   - ```NewUserEnabled``` defines if the AD User is enabled upon creation
   - ```ChangePasswordAtLogon``` defines if the AD User needs to change password upon next login.
+    
 - Locations (ActiveDirectory related)
   - A location object in the .JSON config is used to define several locations and their properties
   - You can define as many locations as you want
@@ -44,6 +43,12 @@ Based on: [```Yamautomate.Core```](https://github.com/yamautomate/Yamautomate.Co
     - ```Country```
     - ```Phone```
     - ```TopLevelDomain```
+
+ - TeamsPhone settings
+   -  ```AzureAppRegistrationClientId``` defines the clientId to an Application Registration that has needed permissions as per requierments table above
+   -  ```CertificateThumprint``` defines the thumbprint of the certificate used to connect to an Application Registration
+   -  ```PolicyName``` defines the name of the voice policy that shall be assigned
+    
  
 ## Generating a new sample config
 ```powershell
