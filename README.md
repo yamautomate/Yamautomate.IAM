@@ -1,5 +1,5 @@
 # Yamautomate.IAM
-Creates an AD User and assigns Teams Phone number. Used in Onboardings.
+Creates an AD User and assigns Teams Phone number.
 Based on: [```Yamautomate.Core```](https://github.com/yamautomate/Yamautomate.Core) and [```Yamautomate.IAM```](https://github.com/yamautomate/Yamautomate.IAM)
 
 ## Limitations and assumptions
