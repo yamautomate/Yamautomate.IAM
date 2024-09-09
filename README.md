@@ -7,13 +7,15 @@ Based on: [```Yamautomate.Core```](https://github.com/yamautomate/Yamautomate.Co
 - Assumes Hybrid Identities
 
 ## Prereqs
-- Required Modules:
-  - ```Yamautomate.Core``` installed
-  - ```MicrosoftTeams``` installed
-  - ```ActiveDirectory``` is installed
+
+### For ```New-YcAdUser```
+- PowerShell Module ```Yamautomate.Core``` installed
+- PowerShell Module ```ActiveDirectory``` is installed
 - Network line of sight to a Domain Controller
 - Account Operator role in AD or higher
-- Certificate that permits Access to an Azure App Registration is installed
+### For ```New-YcTeamsPhoneNumberAssignment```
+- PowerShell Module ```MicrosoftTeams``` installed
+- Certificate that permits Access to an Azure App Registration is installed (for non interactive authentication)
   - AppRegistration needs role ```Teams Administrator```
   - AppRegistration needs permissions ```Organization.Read.All``` 
 
@@ -66,5 +68,5 @@ New-YcAdUser -firstname "Hampisa" -lastname "Tester71" -location "CH" -departmen
 ## Assigning a Teams Phone number to a User
 ```powershell
 Import-Module "Yamautomate.IAM"
-New-YcAdUser -firstname "Hampisa" -lastname "Tester71" -location "CH" -department "Technologies" -team "QE" -phoneNumber "+41791901245" -jobTitle "Tester" -manager "yanik.maurer" -PathToConfig "C:\temp\IdGov-NewAdUser-Config.json" -LogEnabled $true
+New-YcTeamsPhoneNumberAssignment -firstname "Hampisa" -lastname "Tester71" -location "CH" -department "Technologies" -team "QE" -phoneNumber "+41791901245" -jobTitle "Tester" -manager "yanik.maurer" -PathToConfig "C:\temp\IdGov-NewAdUser-Config.json" -LogEnabled $true
 ```
