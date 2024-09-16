@@ -1,0 +1,4 @@
+EmployeeId,FirstName,LastName,userName,telephoneNumber,HireDate,Department,Team,Company,JobTitle,StreetAddress,City,CountryCode,OfficePhone,ZipCode,Manager
+1222,Test,User,test.user,xxx,01/01/2013,Marketing,QE,Contoso,Marekting Director,xxx,xxx,US,xxx,xxx,yanik.maurer
+1513,Theodor,Test,theodor.test,xxx,10/07/2010,IT,IT,Contoso,Project Manager,xxx,xxx,CH,xxx,xxx,yanik.maurer
+1514,Anna,Test,anna.test,xxx,10/07/2010,HR,IT,Contoso,Project Manager,xxx,xxx,CH,xxx,xxx,yanik.maurer
