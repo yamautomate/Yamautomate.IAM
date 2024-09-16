@@ -1,10 +1,10 @@
 @{
-    ModuleVersion = '1.0.2.3'
+    ModuleVersion = '1.0.2.6'
     GUID = 'bf93a78b-e608-4ceb-98ea-e96da66ef864'
     Author = 'Yanik Maurer'
     PowerShellVersion = '5.1'
     RootModule = 'Yamautomate.IAM.psm1'
-    FunctionsToExport = @('New-YcAdUser', 'New-YcTeamsPhoneNumberAssignment', 'New-YcIAMSampleConfig', 'New-YcIAMWelcomeLetterFromTemplate')
+    FunctionsToExport = @('New-YcIAMAdUser', 'New-YcIAMTeamsPhoneNumberAssignment', 'New-YcIAMSampleConfig', 'New-YcIAMWelcomeLetterFromTemplate', 'New-YcIAMScimRequest')
     Description = 'Creates AD Users and assign Teams Phone Numbers.'
     RequiredModules = @(
         @{
