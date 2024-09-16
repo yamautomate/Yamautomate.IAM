@@ -1081,3 +1081,110 @@ class YcIAMConfigTemplate {
         return $config | ConvertTo-Json -Depth 4
     }
 }
+
+function New-YcIAMCsvFromMapping {
+    param (
+        [string]$AttributeMappingFilePath,
+        [string]$OutputCSVPath
+    )
+
+    # Import the .psd1 attribute mapping file
+    $attributeMapping = Import-PowerShellDataFile -Path $AttributeMappingFilePath
+
+    # Initialize an array to store the headers for the CSV
+    $csvHeaders = @()
+
+    # Recursively extract all column names
+    function Get-MappingColumns {
+        param ($mapping, [ref]$headers)
+        
+        foreach ($key in $mapping.Keys) {
+            $value = $mapping[$key]
+            
+            if ($value -is [string]) {
+                # Simple key-value mapping
+                $headers.Value += $value
+            }
+            elseif ($value -is [hashtable]) {
+                # Nested hashtable (e.g. name, addresses)
+                Get-MappingColumns -mapping $value -headers $headers
+            }
+            elseif ($value -is [array]) {
+                foreach ($item in $value) {
+                    if ($item -is [hashtable]) {
+                        Get-MappingColumns -mapping $item -headers $headers
+                    }
+                }
+            }
+        }
+    }
+
+    # Call the recursive function to extract column headers
+    Get-MappingColumns -mapping $attributeMapping -headers ([ref]$csvHeaders)
+
+    # Convert the headers to a unique set to avoid duplicates
+    $csvHeaders = $csvHeaders | Sort-Object -Unique
+
+    # Create an empty PSObject with the headers as properties
+    $emptyRow = New-Object PSObject
+
+    foreach ($header in $csvHeaders) {
+        Add-Member -InputObject $emptyRow -MemberType NoteProperty -Name $header -Value $null
+    }
+
+    # Initialize CSV content with one empty row (or populate this with actual data)
+    $csvContent = @()
+    $csvContent += $emptyRow
+
+    # Export the empty CSV with the headers
+    $csvContent | Export-Csv -Path $OutputCSVPath -NoTypeInformation -Force -Delimiter ','
+
+    Write-Host "CSV with headers generated at: $OutputCSVPath"
+}
+
+function Add-YcIAMRowToImportCSV {
+    param (
+        [string]$CSVPath,
+        [string]$FirstName,
+        [string]$LastName,
+        [string]$EmployeeId,
+        [string]$UserName,
+        [string]$JobTitle,
+        [string]$CountryCode,
+        [string]$OnboardingDate,
+        [string]$StreetAddress,
+        [string]$City,
+        [string]$ZipCode,
+        [string]$OfficePhone,
+        [string]$TelephoneNumber,
+        [string]$Company,
+        [string]$Team,
+        [string]$Department,
+        [string]$Manager
+    )
+
+    # Create a new PSObject with the values provided
+    $newRow = New-Object PSObject -Property @{
+        FirstName       = $FirstName
+        LastName        = $LastName
+        EmployeeId      = $EmployeeId
+        UserName        = $UserName
+        JobTitle        = $JobTitle
+        CountryCode     = $CountryCode
+        OnboardingDate  = $OnboardingDate
+        StreetAddress   = $StreetAddress
+        City            = $City
+        ZipCode         = $ZipCode
+        OfficePhone     = $OfficePhone
+        TelephoneNumber = $TelephoneNumber
+        Company         = $Company
+        Team            = $Team
+        Department      = $Department
+        Manager         = $Manager
+    }
+
+    # Add the new row to the existing CSV
+    $newRow | Export-Csv -Path $CSVPath -Append -NoTypeInformation -Force -Delimiter ','
+
+    Write-Host "New row added to CSV: $CSVPath"
+}
