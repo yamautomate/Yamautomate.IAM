@@ -1,18 +1,23 @@
 # Yamautomate.IAM
-Creates an AD User and assigns Teams Phone number.
+Allows to create AD users via Entra ID API-driven inbound provisoning or directly via a Domain Controller. 
 Based on: [```Yamautomate.Core```](https://github.com/yamautomate/Yamautomate.Core)
 
-## Limitations and assumptions
-- Assumes username notation of "firstname.lastname"
-- No logic if two users with same name exist
+
 
 ## Prereqs
+### For ```New-YcIAMSCIMRequest```
+- [Entra ID API-driven inbound provisioning](https://learn.microsoft.com/en-us/entra/identity/app-provisioning/inbound-provisioning-api-concepts) configured
+- The function leverages the sample code from [here](https://learn.microsoft.com/en-us/entra/identity/app-provisioning/inbound-provisioning-api-powershell) these were baked into ```Yamautomate.IAM```
+- ```AttributeMapping.psd1``` is present and valid (you can specify the path to it either via parameter or configuration)
 
 ### For ```New-YcIAMAdUser```
 - PowerShell Module ```Yamautomate.Core``` installed
 - PowerShell Module ```ActiveDirectory``` is installed
 - Network line of sight to a Domain Controller
 - Account Operator role in AD or higher
+#### Limitations and assumptions
+- Assumes username notation of "firstname.lastname"
+- No logic if two users with same name exist
 ### For ```New-YcIAMTeamsPhoneNumberAssignment```
 - PowerShell Module ```MicrosoftTeams``` installed
 - Certificate that permits Access to an Azure App Registration is installed (for non interactive authentication)
@@ -21,9 +26,26 @@ Based on: [```Yamautomate.Core```](https://github.com/yamautomate/Yamautomate.Co
 ### For ```New-YcIAMWelcomeLetterFromTemplate```
 -  [```DocumentFormat.OpenXml```](https://www.nuget.org/packages/DocumentFormat.OpenXml/) .DLL in  ```lib\``` folder of installation path
 -  [```DocumentFormat.OpenXml.Framework```](https://www.nuget.org/packages/DocumentFormat.OpenXml.Framework) .DLL in  ```lib\``` folder of installation path
-
+  
 The required Version depends your OS and targeted .NET Framework. Prebundled comes ```v3.1.0``` 
-## How it works
+
+## About API-driven inbound provisioning
+```Yamautomate.IAM``` provides a full solution to leverage SCIM provisioning end-to-end, while still providing flexibility.
+In the full end to end solution, an [Azure Automation Runbook](https://github.com/yamautomate/Yamautomate.IAM/blob/main/Runbook.ps1) effectively fires of the API Post request towards the Entra ID API.
+The Runbook is being invoked via Webhook and parameters are passed [using this call](https://github.com/yamautomate/Yamautomate.IAM/blob/main/RunbookCall.ps1). It also uses a very basic mechanism of authentication by checking the ```APIKey``` against an Azrue Automation Variable. If they don't match, further processing is aborted.
+The runbook receives the parameters of the user to be created via Webhook and dynamically constructs a CSV. It then takes that .CSV (that always only contains one user) and sends that to the SCIM provisioning service.
+
+When run via Azure Automation, the function ```New-YcIAMSCIMRequest``` needs to be called with parameter ```-UseConfig $false```, so that it checks the Automation Account for the config. 
+In the Automation Account, the following variables need to exist and be defined:
+- ```APIKey``` - APIKey to be authorized against
+- ```APIProv_APIAppServicePrincipalId``` - ObjectId of Entra ID Enterprise App ```API-driven provisioning to on-premises Active Directory```
+- ```APIProv_AzureAppRegistrationClientId``` - ClientId of custom created Entra ID Enterprise App ```Inbound Provisioning API Client``` (in my case)
+- ```APIProv_CertificateThumbprint``` - Thumbprint of certificate used to connect to custom created Entra ID Enterprise App ```Inbound Provisioning API Client``` (in my case)
+- ```OutputCSVPath``` - Path to where the .CSV shall be created
+- ```PathToMappingFile``` - Path to ```AttributeMapping.psd1```
+- ```tenantId``` - id of Entra Tenant
+
+## About creating AD Users
 ```Yamautomate.IAM``` uses a configuration file to define the beheaviour of how the AD User will be created. When the function is executed, it retrieves the settings from the config file and creates the AD User accordingly.
 
 ## What you can configure in the config
