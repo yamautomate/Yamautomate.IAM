@@ -18,15 +18,15 @@ if ($WebhookData -ne $null) {
         [string]$JobTitle = $WebhookBody.JobTitle
         [string]$CountryCode = $WebhookBody.CountryCode
         [string]$OnboardingDate = $WebhookBody.OnboardingDate
-        [string]$StreetAddress = $WebhookBody.StreetAddress
-        [string]$City = $WebhookBody.City
-        [string]$ZipCode = $WebhookBody.ZipCode
-        [string]$OfficePhone = $WebhookBody.OfficePhone
         [string]$TelephoneNumber = $WebhookBody.Telephone
         [string]$Company = $WebhookBody.Company
         [string]$Team = $WebhookBody.Team
         [string]$Department = $WebhookBody.Department
         [string]$Manager = $WebhookBody.Manager
+        # [string]$StreetAddress = $WebhookBody.StreetAddress
+        # [string]$City = $WebhookBody.City
+        # [string]$ZipCode = $WebhookBody.ZipCode
+        # [string]$OfficePhone = $WebhookBody.OfficePhone
         
     }
     catch {
@@ -40,21 +40,23 @@ if ($WebhookData -ne $null) {
     Validate-YcStrNotEmpty -Value $JobTitle -PropertyName "JobTitle"
     Validate-YcStrNotEmpty -Value $CountryCode -PropertyName "CountryCode"
     Validate-YcStrNotEmpty -Value $OnboardingDate -PropertyName "OnboardingDate"
-    Validate-YcStrNotEmpty -Value $StreetAddress -PropertyName "StreetAddress"
-    Validate-YcStrNotEmpty -Value $City -PropertyName "City"
-    Validate-YcStrNotEmpty -Value $ZipCode -PropertyName "ZipCode"
-    Validate-YcStrNotEmpty -Value $OfficePhone -PropertyName "OfficePhone"
     Validate-YcStrNotEmpty -Value $TelephoneNumber -PropertyName "TelephoneNumber"
     Validate-YcStrNotEmpty -Value $Company -PropertyName "Company"
     Validate-YcStrNotEmpty -Value $Team -PropertyName "Team"
     Validate-YcStrNotEmpty -Value $Department -PropertyName "Department"
     Validate-YcStrNotEmpty -Value $Manager -PropertyName "Manager"
 
-    # Validate Username follows firstname.lastname pattern
+    #Validate-YcStrNotEmpty -Value $StreetAddress -PropertyName "StreetAddress"
+    #Validate-YcStrNotEmpty -Value $City -PropertyName "City"
+    #Validate-YcStrNotEmpty -Value $ZipCode -PropertyName "ZipCode"
+    #Validate-YcStrNotEmpty -Value $OfficePhone -PropertyName "OfficePhone"
+
+    <# Validate Username follows firstname.lastname pattern
     $expectedUserName = "$Firstname.$Lastname".ToLower()
     if ($UserName.ToLower() -ne $expectedUserName) {
         throw "400: Bad Request. Username must follow the format firstname.lastname. Expected: $expectedUserName Received: $UserName"
     }
+    #>
 
     #Validate onboarding date is not in the past
     $onboardingDateParsed = [datetime]::Parse($OnboardingDate)
@@ -97,6 +99,39 @@ catch {
     throw ("Could not create .csv from mapping. Error details: " + $_.Exception.Message)
 }
 
+#Building Properties
+try {
+    # Build the username
+    $userName = "$Firstname.$Lastname".ToLower()
+    # Switch on CountryCode and dynamically retrieve values from Azure Automation Variables
+    switch ($CountryCode) {
+        "CH" {  # Switzerland
+            $StreetAddress = Get-AutomationVariable -Name "CH_StreetAddress"
+            $City = Get-AutomationVariable -Name "CH_City"
+            $ZipCode = Get-AutomationVariable -Name "CH_ZipCode"
+            $OfficePhone = Get-AutomationVariable -Name "CH_OfficePhone"
+        }
+        "DE" {  # Germany
+            $StreetAddress = Get-AutomationVariable -Name "DE_StreetAddress"
+            $City = Get-AutomationVariable -Name "DE_City"
+            $ZipCode = Get-AutomationVariable -Name "DE_ZipCode"
+            $OfficePhone = Get-AutomationVariable -Name "DE_OfficePhone"
+        }
+        "US" {  # United States
+            $StreetAddress = Get-AutomationVariable -Name "US_StreetAddress"
+            $City = Get-AutomationVariable -Name "US_City"
+            $ZipCode = Get-AutomationVariable -Name "US_ZipCode"
+            $OfficePhone = Get-AutomationVariable -Name "US_OfficePhone"
+        }
+        Default {  # Default case for other countries or if CountryCode is not recognized
+            throw "Unsupported CountryCode: $CountryCode"
+        }
+    }
+}
+catch {
+    Write-Host "An error occurred: $($_.Exception.Message)"
+}
+
 #Add user info from request to created csv
 try {
     Write-YcLogMessage ("Adding user info to .csv.. ") -ToOutput $true
@@ -104,6 +139,7 @@ try {
     Write-YcLogMessage ("Successfully added user info to .csv") -ToOutput $true
 }
 catch {
+    Remove-Item -Path $OutputCSVPath -Force
     throw ("Could not add user info to .csv. Error Details: " + $_.Exception.Message)
 }
 
@@ -115,4 +151,7 @@ try {
 }
 catch {
     throw ("Could not send off SCIM Request. Error Details: " + $_.Exception.Message)
+}
+finally {
+    Remove-Item -Path $OutputCSVPath -Force
 }
