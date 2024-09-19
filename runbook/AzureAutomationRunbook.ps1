@@ -3,23 +3,16 @@ param (
     [object]$WebhookData
 )
 
-
 function Authenticate-YcAAWebhookCall {
     param (
         $WebhookData
     )
-
-    Write-YcLogMessage ("WebhookData  is: "+$WebhookData) -source "ReadHeaders" -ToOutput $true
 
     # Retrieve headers for authentication
     $incomingAPIKey = $WebhookData.RequestHeader.'X-APIKey'
     $incomingUserAgent = $WebhookData.RequestHeader.'User-Agent'
     $incomingClientId = $WebhookData.RequestHeader.'X-ClientId'
     $incomingTimestamp = $WebhookData.RequestHeader.'X-Timestamp'
-
-    Write-YcLogMessage ("Incoming User Agent is: "+$incomingUserAgent) -source "ReadHeaders" -ToOutput $true
-    Write-YcLogMessage ("Incoming clientId is: "+$incomingClientId) -source "ReadHeaders" -ToOutput $true
-    Write-YcLogMessage ("Incoming timestamp is: "+$incomingTimestamp) -source "ReadHeaders" -ToOutput $true
 
     # Validate User-Agent
     $permittedUserAgents = (Get-AutomationVariable -Name "PermittedUserAgents").Split(",") | ForEach-Object { $_.Trim() }
@@ -64,6 +57,8 @@ if ($WebhookData -ne $null) {
 
     Authenticate-YcAAWebhookCall $WebhookData
     # Extract the webhook request body (payload)
+    Write-YcLogMessage ("WebhookData.RequestBody is: "+$WebhookData.RequestBody) -source "ReadBody" -ToOutput $true
+
     try {
         $WebhookBody = $WebhookData.RequestBody | ConvertFrom-Json
         [string]$Firstname = $WebhookBody.Firstname
@@ -87,7 +82,7 @@ if ($WebhookData -ne $null) {
     catch {
         throw ("Could not extract RequestBody from WebhookData. Error details: " + $_.Exception.Message)
     }
-    
+
     #Validate input values
     Validate-YcStrNotEmpty -Value $Firstname -PropertyName "Firstname"
     Validate-YcStrNotEmpty -Value $Lastname -PropertyName "Lastname"
@@ -119,7 +114,7 @@ if ($WebhookData -ne $null) {
     }
 
     # If all validations pass, continue processing
-    Write-YcLogMessage ("200: Validation successful. Proceeding.") -ToOutput $true
+    Write-YcLogMessage ("200: Validation of all input parameters was successful. Proceeding.") -ToOutput $true
 
 } 
 
@@ -137,18 +132,6 @@ try {
     $APIProv_AzureAppRegistrationClientId = Get-AutomationVariable -Name "APIProv_AzureAppRegistrationClientId" 
     $APIProv_CertificateThumbprint = Get-AutomationVariable -Name "APIProv_CertificateThumbprint" 
     $tenantId = Get-AutomationVariable -Name "tenantId" 
-
-    Write-YcLogMessage ("Path to mapping file is: "+$PathToMappingFile) -ToOutput $true -Source "MapVariables"
-    Write-YcLogMessage ("PathToCsv is: "+$PathToCsv) -ToOutput $true -Source "MapVariables"
-    Write-YcLogMessage ("OutputCSVPath is: "+$OutputCSVPath) -ToOutput $true -Source "MapVariables"
-    Write-YcLogMessage ("APIProv_APIAppServicePrincipalId is: "+$APIProv_APIAppServicePrincipalId) -ToOutput $true -Source "MapVariables"
-    Write-YcLogMessage ("APIProv_AzureAppRegistrationClientId is: "+$APIProv_AzureAppRegistrationClientId) -ToOutput $true -Source "MapVariables"
-    Write-YcLogMessage ("APIProv_CertificateThumbprint is: "+$APIProv_CertificateThumbprint) -ToOutput $true -Source "MapVariables"
-    Write-YcLogMessage ("tenantId: "+$tenantId) -ToOutput $true -Source "MapVariables"
-
-    Write-YcLogMessage "Done reading config." -ToOutput $true -Source "MapVariables"
-    Write-YCLogMessage "----------------------------------------------------------------" -ToOutput $true
-    
 }
 catch {
     throw ("Could not read Azure Automation Variables. Error details: " + $_.Exception.Message)
