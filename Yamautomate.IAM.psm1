@@ -466,11 +466,13 @@ function New-YcIAMSCIMRequest
     param (
         [Parameter(Mandatory=$false)] [string]$PathToConfig = "$env:USERPROFILE\.yc\YcIAMSampleConfig.json",
         [Parameter(Mandatory=$false)] [bool]$UseConfig = $true,
+        [Parameter(Mandatory=$false)] [bool]$UseAACertificate = $false,
         [Parameter(Mandatory=$false)] [string]$PathToMappingFile,
         [Parameter(Mandatory=$false)] [string]$PathToCsv,
         [Parameter(Mandatory=$false)] [string]$APIProv_APIAppServicePrincipalId,
         [Parameter(Mandatory=$false)] [string]$APIProv_AzureAppRegistrationClientId,
         [Parameter(Mandatory=$false)] [string]$APIProv_CertificateThumbprint,
+        [Parameter(Mandatory=$false)] [string]$APIProv_AutomationCertificateName,
         [Parameter(Mandatory=$false)] [string]$tenantId
     )
     
@@ -547,13 +549,23 @@ function New-YcIAMSCIMRequest
             }
         }
         
-        try {
-            $ClientCertificate =  (Get-ChildItem Cert:\LocalMachine\My\$APIProv_CertificateThumbprint)
+        if ($UseAACertificate -eq $true) {
+            try {
+                $ClientCertificate = Get-AutomationCertificate -Name $APIProv_AutomationCertificateName 
+            }
+            catch {
+                throw ("Could not find/grab certificate needed for authentication. Aborting. Error Details: "+$_.Exception.Message)
+            }
         }
-        catch {
-            throw ("Could not find/grab certificate needed for authentication. Aborting. Error Details: "+$_.Exception.Message)
+        else {
+            try {
+                $ClientCertificate =  (Get-ChildItem Cert:\LocalMachine\My\$APIProv_CertificateThumbprint)
+            }
+            catch {
+                throw ("Could not find/grab certificate needed for authentication. Aborting. Error Details: "+$_.Exception.Message)
+            }
         }
-        
+
         try {
             $AttributeMapping = Import-PowerShellDataFile $PathToMappingFile
         }
@@ -585,10 +597,10 @@ function New-YcIAMSCIMRequest
             }
             elseif ($ClientId) {
                 $paramConnectMgGraph['ClientId'] = $APIProv_AzureAppRegistrationClientId
-                $paramConnectMgGraph['Scopes'] = 'Application.ReadWrite.All', 'AuditLog.Read.All','SynchronizationData-User.Upload' 
+                $paramConnectMgGraph['Scopes'] = 'AuditLog.Read.All','SynchronizationData-User.Upload' 
             }
             else {
-                $paramConnectMgGraph['Scopes'] = 'Application.ReadWrite.All', 'AuditLog.Read.All','SynchronizationData-User.Upload'
+                $paramConnectMgGraph['Scopes'] = 'AuditLog.Read.All','SynchronizationData-User.Upload'
             }
 
             Import-Module Microsoft.Graph.Applications -ErrorAction Stop
