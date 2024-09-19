@@ -3,56 +3,6 @@ param (
     [object]$WebhookData
 )
 
-function Authenticate-YcAAWebhookCall {
-    param (
-        $WebhookData
-    )
-
-    # Retrieve headers for authentication
-    $incomingAPIKey = $WebhookData.RequestHeader.'X-APIKey'
-    $incomingUserAgent = $WebhookData.RequestHeader.'User-Agent'
-    $incomingClientId = $WebhookData.RequestHeader.'X-ClientId'
-    $incomingTimestamp = $WebhookData.RequestHeader.'X-Timestamp'
-
-    # Validate User-Agent
-    $permittedUserAgents = (Get-AutomationVariable -Name "PermittedUserAgents").Split(",") | ForEach-Object { $_.Trim() }
-    if ($permittedUserAgents -notcontains $incomingUserAgent) {
-        throw "401: Unauthorized. Unknown User-Agent: $incomingUserAgent"
-    }
-
-    # Validate Timestamp (within 5 minutes to prevent replay attacks)
-    $requestTimestamp = [datetime]::Parse($incomingTimestamp)
-    $currentTime = Get-Date
-    if (($currentTime - $requestTimestamp).TotalMinutes -gt 5) {
-        throw "401: Unauthorized. Request expired. Request timestamp: $requestTimestamp"
-    }
-    
-    # Validate Client ID
-    $allowedClientIds = (Get-AutomationVariable -Name "AllowedClientIds").Split(",") | ForEach-Object { $_.Trim() }
-    if ($allowedClientIds -notcontains $incomingClientId) {
-        throw "401: Unauthorized. Invalid Client-ID: $incomingClientId"
-    }
-
-    # Validate API Key
-    $APIKeyStored = Get-AutomationVariable -Name "APIKey"
-    if ($incomingAPIKey -ne $APIKeyStored) {
-        throw "401: Unauthorized. Invalid API Key."
-    }
-
-    # If all validations pass
-    Write-YcLogMessage ("200: Successful authentication. User-Agent: $incomingUserAgent, Client-ID: $incomingClientId, Timestamp: $requestTimestamp") -ToOutput $true
-}
-
-function Validate-YcStrNotEmpty {
-    param(
-        [string]$Value,
-        [string]$PropertyName
-    )
-    if ([string]::IsNullOrWhiteSpace($Value)) {
-        throw "400: Bad Request. $PropertyName cannot be empty."
-    }
-}
-
 if ($WebhookData -ne $null) {
 
     Authenticate-YcAAWebhookCall $WebhookData
@@ -125,12 +75,12 @@ else {
 #Map Azure Automation Variables
 try {
     $PathToMappingFile = Get-AutomationVariable -Name "PathToMappingFile"
-    $PathToCsv = Get-AutomationVariable -Name "PathToCsv" 
     $OutputCSVPath =  Get-AutomationVariable -Name "OutputCSVPath"
 
     $APIProv_APIAppServicePrincipalId = Get-AutomationVariable -Name "APIProv_APIAppServicePrincipalId" 
     $APIProv_AzureAppRegistrationClientId = Get-AutomationVariable -Name "APIProv_AzureAppRegistrationClientId" 
     $APIProv_CertificateThumbprint = Get-AutomationVariable -Name "APIProv_CertificateThumbprint" 
+    $APIProv_AutomationCertificateName = Get-AutomationVariable -Name "APIProv_AutomationCertificateName" 
     $tenantId = Get-AutomationVariable -Name "tenantId" 
 }
 catch {
@@ -160,7 +110,7 @@ catch {
 #Wrap csv into SCIM request and send that off to Entra ID provisioning API
 try {
     Write-YcLogMessage ("Sending SCIM Body as POST request to EntraID provisioning API...") -ToOutput $true
-    New-YcIAMSCIMRequest -UseConfig $false -PathToCsv $OutputCSVPath -PathToMappingFile $PathToMappingFile -APIProv_APIAppServicePrincipalId $APIProv_APIAppServicePrincipalId -APIProv_AzureAppRegistrationClientId $APIProv_AzureAppRegistrationClientId -APIProv_CertificateThumbprint $APIProv_CertificateThumbprint -tenantId $tenantId
+    New-YcIAMSCIMRequest -UseConfig $false -PathToCsv $OutputCSVPath -PathToMappingFile $PathToMappingFile -APIProv_APIAppServicePrincipalId $APIProv_APIAppServicePrincipalId -APIProv_AzureAppRegistrationClientId $APIProv_AzureAppRegistrationClientId -APIProv_CertificateThumbprint $APIProv_CertificateThumbprint -tenantId $tenantId -UseAACertificate $true -APIProv_AutomationCertificateName $APIProv_AutomationCertificateName
     Write-YcLogMessage ("Successfully sent SCIM Body as POST request to EntraID provisioning API. Check provisioning logs from here.") -ToOutput $true
 }
 catch {
