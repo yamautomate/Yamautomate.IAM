@@ -69,7 +69,6 @@ if ($WebhookData -ne $null) {
     Write-YcLogMessage ("200: Validation of all input parameters was successful. Proceeding.") -ToOutput $true
 
 } 
-
 else {
     throw "WebhookData is null. No payload was received."
 }
@@ -103,6 +102,15 @@ catch {
 try {
     # Build the username
     $userName = "$Firstname.$Lastname".ToLower()
+
+    # Split the display name into first and last names
+    $nameParts = $Manager -split " "
+    # Convert the first and last name to lowercase and join with a period
+    $Manager = ($nameParts[0].ToLower()) + "." + ($nameParts[1].ToLower())
+
+    $onboardingDateTime = [DateTime]::ParseExact($onboardingDate, 'yyyy-MM-dd', $null)
+    $onboardingDate = $onboardingDateTime.ToString("yyyyMMdd") + "080000.0Z"
+
     # Switch on CountryCode and dynamically retrieve values from Azure Automation Variables
     switch ($CountryCode) {
         "CH" {  # Switzerland
