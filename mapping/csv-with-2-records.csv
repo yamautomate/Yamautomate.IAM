@@ -1,4 +1,4 @@
 EmployeeId,FirstName,LastName,userName,telephoneNumber,onboardingDate,Department,Team,Company,JobTitle,StreetAddress,City,CountryCode,OfficePhone,ZipCode,Manager
-1222,Test,User,test.user,259-915-1098,20240501153845.0Z,Corporate Development,QE,Speedgoat,Sales Executive,"209 West Central Street, Ste 215","Natick, MA",US,41266707550,1760,yanik.maurer
-1513,Theodor,Test,theodor.test,259-915-1098,20240501153845.0Z,Corporate Development,IT,Speedgoat,Project Manager,Waldeggstrasse 30,Liebefeld,CH,49514000000,3097,yanik.maurer
-1514,Anna,Test,anna.test,259-915-1098,20240501153845.0Z,Corporate Development,IT,Speedgoat,Project Manager,Waldeggstrasse 30,Liebefeld,CH,49514000000,3097,yanik.maurer
+1222,Test,User,test.user,259-915-1098,20240501153845.0Z,Corporate Development,QE,MyCompany,Sales Executive
+1513,Theodor,Test,theodor.test,259-915-1098,20240501153845.0Z,Corporate Development,IT,MyCompany,Project Manager
+1514,Anna,Test,anna.test,259-915-1098,20240501153845.0Z,Corporate Development,IT,MyCompany,Project Manager
